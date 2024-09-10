@@ -116,7 +116,13 @@ RosPilot::RosPilot(const ros::NodeHandle& nh, const ros::NodeHandle& pnh)
     std::thread(&RosPilot::referencePublisher, this);
 }
 
-RosPilot::~RosPilot() { shutdown_ = true; }
+RosPilot::~RosPilot() {
+  if (reference_publishing_thread_.joinable()) {
+    shutdown_ = true;
+    reference_publishing_thread_.join();
+  }
+  shutdown_ = true;
+}
 
 void RosPilot::runPipeline(const ros::TimerEvent& event) {
   pilot_.runPipeline(event.current_real.toSec());
@@ -283,7 +289,7 @@ void RosPilot::pipelineCallback(const QuadState& state,
   msg_odo.twist.twist = msg.velocity;
 
   cmd_pub_.publish(toRosCommand(command));
-  state_odometry_pub_.publish(msg_odo);
+  // state_odometry_pub_.publish(msg_odo);
   state_pub_.publish(msg);
 
   dodgeros_msgs::Telemetry telemetry_msg;
