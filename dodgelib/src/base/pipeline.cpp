@@ -132,8 +132,8 @@ bool Pipeline::run(const Scalar t) {
   } else {
     feedthrough_failure_count_ = 0;
   }
-  if (feedthrough_failure_count_ > 3) {
-    logger_.error("Feedthrough invalid for more than 3 consecutive times!");
+  if (feedthrough_failure_count_ > 1) {
+    logger_.error("Feedthrough invalid for more than 1 consecutive times!");
     return false;
   }
 
