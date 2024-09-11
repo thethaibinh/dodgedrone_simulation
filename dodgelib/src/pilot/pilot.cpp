@@ -201,6 +201,10 @@ bool Pilot::off() {
   return true;
 }
 
+bool Pilot::is_active() {
+  return !shutdown_;
+}
+
 bool Pilot::appendTrajectory(const QuadState& start_state,
                              const QuadState& end_state) {
   Pipeline& active_pipeline = getActivePipeline();
@@ -503,7 +507,9 @@ void Pilot::motorSpeedCallback(const Vector<4>& mot) {
 void Pilot::pipelineThread() {
   while (!shutdown_) {
     pipeline_timer_.tic();
-    pipeline_.run(time_());
+    if (!pipeline_.run(time_())) {
+      shutdown_ = true;
+    }
 
     const Scalar dt_last = pipeline_timer_.toc();
 

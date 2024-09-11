@@ -96,7 +96,7 @@ class RosPilot {
   ros::Publisher state_odometry_pub_;
   ros::Publisher telemetry_pub_;
   ros::Publisher cmd_pub_;
-
+  ros::Publisher reset_sim_pub_;
   ros::Timer run_pipeline_timer_;
 
   // Dodgelib

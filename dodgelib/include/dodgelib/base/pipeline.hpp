@@ -86,6 +86,7 @@ class Pipeline {
   int outerloop_divisor_{1};
   int outerloop_counter_{-1};
   bool stop_after_feedthrough_;
+  uint16_t feedthrough_failure_count_{0};
   Scalar feedthrough_timeout_{0.05};
 
   std::vector<PipelineCallbackFunction> callbacks_;

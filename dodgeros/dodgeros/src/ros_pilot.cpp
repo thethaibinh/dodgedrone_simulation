@@ -98,6 +98,7 @@ RosPilot::RosPilot(const ros::NodeHandle& nh, const ros::NodeHandle& pnh)
   state_odometry_pub_ = pnh_.advertise<nav_msgs::Odometry>("odometry", 1);
   telemetry_pub_ = pnh_.advertise<dodgeros_msgs::Telemetry>("telemetry", 1);
   cmd_pub_ = pnh_.advertise<dodgeros_msgs::Command>("mpc_command", 1);
+  reset_sim_pub_ = pnh_.advertise<std_msgs::Empty>("/kingfisher/skip_trial", 1, true);
 
   if (params_.pipeline_cfg_.bridge_cfg.type == "ROS") {
     pilot_.registerExternalBridge(
@@ -346,6 +347,10 @@ void RosPilot::referencePublisher() {
     if (shutdown_ || !ros::ok()) break;
     const ReferenceVector references = references_;
     reference_visualizer_.visualize(references);
+    if (!pilot_.is_active()) {
+      ROS_WARN("Pilot is shutdown, stopping reference publisher");
+      reset_sim_pub_.publish(std_msgs::Empty());
+    }
   }
 }
 

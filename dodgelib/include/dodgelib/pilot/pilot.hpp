@@ -53,6 +53,7 @@ class Pilot {
   bool start();
   bool land();
   bool off();
+  bool is_active();
 
   bool forceHover();
   bool goToPose(const QuadState& end_state);

@@ -127,7 +127,14 @@ bool Pipeline::run(const Scalar t) {
   if ((t - feedthrough_command_.t) > feedthrough_timeout_) {
     logger_.warn("Feedthrough command timed out: %.3f!",
                  (t - feedthrough_command_.t));
+    feedthrough_failure_count_++;
     feedthrough_valid = false;
+  } else {
+    feedthrough_failure_count_ = 0;
+  }
+  if (feedthrough_failure_count_ > 3) {
+    logger_.error("Feedthrough invalid for more than 3 consecutive times!");
+    return false;
   }
 
   // If available, apply feedthrough command...
