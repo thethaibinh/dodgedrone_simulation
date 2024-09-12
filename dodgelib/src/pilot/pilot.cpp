@@ -35,13 +35,9 @@ Pilot::~Pilot() {
   shutdown_ = true;
 }
 
-void Pilot::launchPipeline() {
-  pipeline_thread_ = std::thread(&Pilot::pipelineThread, this);
-}
+bool Pilot::runPipeline() { return runPipeline(time_()); }
 
-void Pilot::runPipeline() { runPipeline(time_()); }
-
-void Pilot::runPipeline(const Scalar t) { pipeline_.run(time_()); }
+bool Pilot::runPipeline(const Scalar t) { return pipeline_.run(time_()); }
 
 bool Pilot::addHover(const Vector<3>& hover_pos, Scalar yaw, Scalar start_time,
                      Scalar duration) {
@@ -502,26 +498,6 @@ void Pilot::imuCallback(const ImuSample& imu) {
 
 void Pilot::motorSpeedCallback(const Vector<4>& mot) {
   if (pipeline_.estimator_) pipeline_.estimator_->addMotorSpeeds(mot);
-}
-
-void Pilot::pipelineThread() {
-  while (!shutdown_) {
-    pipeline_timer_.tic();
-    if (!pipeline_.run(time_())) {
-      shutdown_ = true;
-    }
-
-    const Scalar dt_last = pipeline_timer_.toc();
-
-    const Scalar remainder = dt_last - params_.dt_min_;
-    if (remainder < 0.0) {
-      std::this_thread::sleep_for(
-        std::chrono::nanoseconds((int)(-1e9 * remainder)));
-    } else {
-      logger_.info("Pipeline too slow by %1.3fms with %1.3fms!",
-                   1e3 * remainder, 1e3 * dt_last);
-    }
-  }
 }
 
 Command Pilot::getCommand() const { return pipeline_.getCommand(); }

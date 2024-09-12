@@ -15,9 +15,8 @@ class Pilot {
   Pilot(const PilotParams& params, const TimeFunction time_function);
   ~Pilot();
 
-  void launchPipeline();
-  void runPipeline();
-  void runPipeline(const Scalar t);
+  bool runPipeline();
+  bool runPipeline(const Scalar t);
 
 
   bool getReference(const int idx, ReferenceBase* const reference) const;
@@ -89,7 +88,6 @@ class Pilot {
   inline Scalar getTime() const { return time_(); }
 
  private:
-  void pipelineThread();
   Pipeline& getActivePipeline();
   const TimeFunction time_;
   PilotParams params_;

@@ -129,12 +129,6 @@ bool Pipeline::run(const Scalar t) {
                  (t - feedthrough_command_.t));
     feedthrough_failure_count_++;
     feedthrough_valid = false;
-  } else {
-    feedthrough_failure_count_ = 0;
-  }
-  if (feedthrough_failure_count_ > 1) {
-    logger_.error("Feedthrough invalid for more than 1 consecutive times!");
-    return false;
   }
 
   // If available, apply feedthrough command...
@@ -164,6 +158,11 @@ bool Pipeline::run(const Scalar t) {
     callback(state_, feedback_, references_, setpoints_, setpoints_outer_,
              setpoints_inner_, command_);
 
+  if (feedthrough_failure_count_ > 5) {
+    feedthrough_failure_count_ = 0;
+    logger_.error("Feedthrough invalid for more than 5 times!");
+    return false;
+  }
   return true;
 }
 
