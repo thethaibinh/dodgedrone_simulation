@@ -66,6 +66,7 @@ class Pipeline {
   void setOuterloopDivisor(const int divisor);
   void setStopAfterFeedthrough(const bool stop_after_feedthrough);
   void setFeedthroughTimeout(const Scalar& feedthrough_timeout);
+  void reset_feedthrough_failure_count();
 
   [[nodiscard]] Scalar dt() const { return dt_; }
 
@@ -87,7 +88,7 @@ class Pipeline {
   int outerloop_counter_{-1};
   bool stop_after_feedthrough_;
   uint16_t feedthrough_failure_count_{0};
-  Scalar feedthrough_timeout_{0.05};
+  Scalar feedthrough_timeout_{0.1};
 
   std::vector<PipelineCallbackFunction> callbacks_;
 };

@@ -193,6 +193,7 @@ bool Pilot::off() {
   pipeline_.bridge_->deactivate();
   pipeline_.references_.clear();
   pipeline_.bridge_->reset();
+  pipeline_.reset_feedthrough_failure_count();
 
   return true;
 }

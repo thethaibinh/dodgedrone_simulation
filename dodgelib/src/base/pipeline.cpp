@@ -158,12 +158,16 @@ bool Pipeline::run(const Scalar t) {
     callback(state_, feedback_, references_, setpoints_, setpoints_outer_,
              setpoints_inner_, command_);
 
-  if (feedthrough_failure_count_ > 5) {
+  if (feedthrough_failure_count_ > 3) {
     feedthrough_failure_count_ = 0;
-    logger_.error("Feedthrough invalid for more than 5 times!");
+    logger_.error("Feedthrough invalid for more than 3 times!");
     return false;
   }
   return true;
+}
+
+void Pipeline::reset_feedthrough_failure_count() {
+  feedthrough_failure_count_ = 0;
 }
 
 bool Pipeline::appendReference(std::shared_ptr<ReferenceBase>&& reference) {

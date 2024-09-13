@@ -113,8 +113,8 @@ RosPilot::RosPilot(const ros::NodeHandle& nh, const ros::NodeHandle& pnh)
   run_pipeline_timer_ = nh_.createTimer(
     ros::Duration(pilot_.getParams().dt_min_), &RosPilot::runPipeline, this);
 
-  // reference_publishing_thread_ =
-  //   std::thread(&RosPilot::referencePublisher, this);
+  reference_publishing_thread_ =
+    std::thread(&RosPilot::referencePublisher, this);
 }
 
 RosPilot::~RosPilot() {
