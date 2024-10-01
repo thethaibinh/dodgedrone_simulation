@@ -293,7 +293,7 @@ void RosPilot::pipelineCallback(const QuadState& state,
   msg_odo.twist.twist = msg.velocity;
 
   cmd_pub_.publish(toRosCommand(command));
-  // state_odometry_pub_.publish(msg_odo);
+  state_odometry_pub_.publish(msg_odo);
   state_pub_.publish(msg);
 
   dodgeros_msgs::Telemetry telemetry_msg;
