@@ -119,6 +119,8 @@ bool Pipeline::run(const Scalar t) {
         hover.t = std::max(hover.t, t);
         appendReference(std::make_shared<HoverReference>(hover));
       }
+    } else if (references_.back()->isVelocityRefernce()) {
+      while (references_.size() > 1) references_.erase(references_.begin());
     }
   }
 
@@ -175,13 +177,14 @@ bool Pipeline::appendReference(std::shared_ptr<ReferenceBase>&& reference) {
     logger_.error("Reference is not valid!");
     return false;
   }
-
   if (references_.empty()) {
     references_.push_back(reference);
   } else {
     const Scalar start_time = reference->getStartTime();
     const Scalar trajectories_end_time = references_.back()->getEndTime();
-    if (start_time >= trajectories_end_time) {
+    if (references_.back()->isVelocityRefernce()) {
+      references_.push_back(reference);
+    } else if (start_time >= trajectories_end_time) {
       references_.push_back(reference);
     } else if (references_.back()->isHover() &&
                references_.back()->isTimeInRange(start_time)) {
@@ -201,7 +204,7 @@ bool Pipeline::appendReference(std::shared_ptr<ReferenceBase>&& reference) {
     }
   }
 
-  printReferenceInfo(true);
+  // printReferenceInfo(true);
   return true;
 }
 

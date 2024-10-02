@@ -24,7 +24,7 @@ class VelocityReference : public ReferenceBase {
   const bool update_from_estimate_;
   Vector<3> v_ = Vector<3>::Zero();
   Scalar yaw_last_{0.0};
-  Scalar yaw_rate_{0.0};
+  Scalar reference_yaw_{0.0};
   const Scalar timeout_{1.0};
   Scalar t_last_update_{NAN};
   Logger logger_{name()};

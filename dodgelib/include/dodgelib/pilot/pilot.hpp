@@ -56,7 +56,7 @@ class Pilot {
 
   bool forceHover();
   bool goToPose(const QuadState& end_state);
-  bool setVelocityReference(const Vector<3>& velocity, const Scalar yaw_rate);
+  bool setVelocityReference(const Vector<3>& velocity, const Scalar reference_yaw);
 
   bool addHover(const Vector<3>& hover_pos, Scalar yaw = NAN,
                 Scalar start_time = NAN, Scalar duration = NAN);
