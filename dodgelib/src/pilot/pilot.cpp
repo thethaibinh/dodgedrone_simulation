@@ -57,19 +57,31 @@ bool Pilot::addHover(const Vector<3>& hover_pos, Scalar yaw, Scalar start_time,
 }
 
 bool Pilot::setVelocityReference(const Vector<3>& velocity,
-                                 const Scalar yaw_rate) {
+                                 const Scalar reference_yaw) {
   static std::shared_ptr<VelocityReference> reference;
   if (isInVelocityReference()) {
+    
+    // we assume the provided velocity is in bodyframe and transform it to world
+    // frame    
     QuadState state;
+    state.q(reference_yaw);
+    Vector<3> des_vel_world = state.q() * velocity;
+    
+    // get current state
     if (!pipeline_.estimator_->getRecent(&state)) {
       logger_.warn("Could not get reference state!");
       return false;
     }
-    // we assume the provided velocity is in bodyframe and transform it to world
-    // frame
-    Vector<3> des_vel_world = state.q() * velocity;
-    if (!reference->update(des_vel_world, yaw_rate)) {
+    
+    // initialize reference with current state
+    reference = std::make_shared<VelocityReference>(state);
+    
+    // update reference with desired velocity and yaw
+    if (!reference->update(des_vel_world, reference_yaw)) {
       logger_.warn("Could not update velocity reference!");
+      return false;
+    }
+    if (!pipeline_.appendReference(reference)) {
       return false;
     }
   } else {
@@ -77,34 +89,45 @@ bool Pilot::setVelocityReference(const Vector<3>& velocity,
       logger_.warn("More references set, won't switch to velocity reference!");
       return false;
     }
-    if (!isInHover()) {
-      logger_.warn("Not in hover, won't switch to velocity reference!");
-      return false;
-    }
+    // if (!isInHover()) {
+    //   logger_.warn("Not in hover, won't switch to velocity reference!");
+    //   return false;
+    // }
 
+    // we assume the provided velocity is in bodyframe and transform it to world
+    // frame
     QuadState state;
+    state.q(reference_yaw);
+    Vector<3> des_vel_world = state.q() * velocity;
+
+    // get current state
     if (!pipeline_.estimator_->getRecent(&state)) {
       logger_.warn(
         "Could not get reference state, wont't switch to velocity reference!");
       return false;
     }
 
+    // initialize reference with current state
     reference = std::make_shared<VelocityReference>(state);
-    // we assume the provided velocity is in bodyframe and transform it to world
-    // frame
-    Vector<3> des_vel_world = state.q() * velocity;
-    reference->update(des_vel_world, yaw_rate);
-    pipeline_.appendReference(reference);
+    // update reference with desired velocity and yaw
+    reference->update(des_vel_world, reference_yaw);
+    if (!pipeline_.appendReference(reference)) {
+      return false;
+    }
   }
 
   return true;
 }
 
 bool Pilot::isInHover() const {
+  if (pipeline_.references_.size() == 0)
+    return false;  
   return pipeline_.references_.front()->isHover();
 }
 
 bool Pilot::isInVelocityReference() const {
+  if (pipeline_.references_.size() == 0)
+    return false;
   return pipeline_.references_.front()->isVelocityRefernce();
 }
 

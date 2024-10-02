@@ -19,10 +19,12 @@ Setpoint VelocityReference::getSetpoint(const QuadState& state,
   if (!std::isfinite(state.t)) return setpoint;
   const Scalar t_query = std::isfinite(t) ? t : state.t;
   if (t_query < state.t) return setpoint;
-
   if (t == state.t) {  // If requested at the query state...
     updateTo(state);
     setpoint.state = start_state_;
+    QuadState state_;
+    state_.q(reference_yaw_);
+    setpoint.state.q(state_.q());
   } else {  // .. or if prediction requested.
     const Scalar dt = t_query - start_state_.t;
 
@@ -30,11 +32,12 @@ Setpoint VelocityReference::getSetpoint(const QuadState& state,
     setpoint.state.t = t_query;
     setpoint.state.p += dt * v_;
     setpoint.state.v = v_;
-    setpoint.state.q(yaw_last_ + dt * yaw_rate_);
-    setpoint.state.w.z() = yaw_rate_;
+    QuadState state_;
+    state_.q(reference_yaw_);
+    setpoint.state.q(state_.q());
   }
 
-  setpoint.input = Command(t, G, Vector<3>(0, 0, yaw_rate_));
+  setpoint.input = Command(t, G, Vector<3>(0, 0, 0));
   return setpoint;
 }
 
@@ -45,7 +48,6 @@ void VelocityReference::updateTo(const QuadState& state) {
   if (std::isnan(t_last_update_)) t_last_update_ = state.t;
   if (state.t - t_last_update_ > timeout_) {
     v_.setZero();
-    yaw_rate_ = 0.0;
   }
 
   if (update_from_estimate_) {
@@ -54,24 +56,21 @@ void VelocityReference::updateTo(const QuadState& state) {
     if (std::isfinite(new_yaw)) yaw_last_ = new_yaw;
     start_state_.q(yaw_last_);
     start_state_.v = v_;
-    start_state_.w.z() = yaw_rate_;
   } else {
     const Scalar dt = state.t - start_state_.t;
     start_state_.t = state.t;
     start_state_.p += dt * v_;
     start_state_.v = v_;
-    yaw_last_ += dt * yaw_rate_;
     start_state_.q(yaw_last_);
-    start_state_.w = Vector<3>(0.0, 0.0, yaw_rate_);
   }
 }
 
 bool VelocityReference::update(const Vector<3>& velocity,
-                               const Scalar yaw_rate) {
-  if (!velocity.allFinite() || !std::isfinite(yaw_rate)) return false;
+                               const Scalar reference_yaw) {
+  if (!velocity.allFinite() || !std::isfinite(reference_yaw)) return false;
 
   v_ = velocity;
-  yaw_rate_ = yaw_rate;
+  reference_yaw_ = reference_yaw;
   t_last_update_ = start_state_.t;
   return true;
 }
